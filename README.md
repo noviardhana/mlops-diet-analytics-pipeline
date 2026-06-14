@@ -17,7 +17,7 @@ SUBMISSION_SML/
 
 ## 🛠️ 4 Tahapan Utama Pipeline
 
-### 1. Preprocessing (Pra-pemrosesan Data)
+### 1. [Preprocessing](https://github.com/noviardhana/Eksperimen_SML_Tegas-Gagas-Impian) (Pra-pemrosesan Data)
 
 Tahap awal untuk memastikan kualitas data sebelum masuk ke dalam proses _training_.
 
@@ -35,7 +35,7 @@ Tahap eksperimen untuk mencari performa model terbaik menggunakan arsitektur **M
 -   **Manajemen Artefak:** Seluruh performa metrik, parameter, dan file model fisik disimpan secara terstruktur di dalam folder `mlruns/` dan `mlartifacts/`.
     
 
-### 3. Workflow-CI (Continuous Integration)
+### 3. [Workflow-CI](https://github.com/noviardhana/Workflow-CI) (Continuous Integration)
 
 Sistem otomatisasi untuk menjamin bahwa setiap perubahan kode aman dan memenuhi standar sebelum dideploy.
 
