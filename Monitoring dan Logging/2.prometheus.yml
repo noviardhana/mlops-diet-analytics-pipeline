@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 5s     # Frekuensi Prometheus melakukan scraping data metrik (setiap 5 detik)
+  evaluation_interval: 5s # Frekuensi sistem mengevaluasi aturan alert (alert rules)
+
+scrape_configs:
+  # Identifier utama untuk job monitoring (akan menjadi label pembeda di dashboard Grafana)
+  - job_name: 'lmodel_inference_api'
+    
+    static_configs:
+      # Endpoint target tempat script prometheus_exporter.py mengekspos metrik
+      - targets: ['127.0.0.1:8000']

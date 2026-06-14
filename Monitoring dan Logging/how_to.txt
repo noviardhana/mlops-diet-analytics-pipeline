@@ -1,0 +1,17 @@
+# 1. Berikan izin akses untuk membaca folder lokal
+$env:MLFLOW_ALLOW_FILE_STORE="true"
+
+# 2. Nyalakan MLflow Tracking UI
+python -m mlflow ui --port 5001
+
+# 3. Nyalakan agen penyadap metrik (berjalan di Port 8000)
+python .\3.prometheus_exporter.py
+
+# 4. Nyalakan server Prometheus dengan konfigurasi kustom
+.\prometheus.exe --config.file=prometheus.yml
+
+{instance="127.0.0.1:8000"}
+
+# 5. Jalankan script inference untuk melakukan prediksi
+python .\7.Inference.py
+
