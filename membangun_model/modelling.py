@@ -1,18 +1,22 @@
-import time
+import time, mlflow, mlflow.sklearn, warnings, logging
 import pandas as pd
+
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
 import seaborn as sns
+sns.set_theme(style="whitegrid")
+
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score, classification_report, confusion_matrix
-import warnings
-import mlflow
-import mlflow.sklearn
 
+logging.getLogger("mlflow").setLevel(logging.ERROR)
 warnings.filterwarnings('ignore')
-sns.set_theme(style="whitegrid")
+
 
 class DietModelPipeline:
     """
@@ -31,14 +35,27 @@ class DietModelPipeline:
         self.predictions = {}
         
         self.models = {
-            'Logistic Regression': LogisticRegression(penalty='l2', C=0.1, solver='lbfgs', max_iter=2000, tol=1e-4, class_weight='balanced', n_jobs=-1, random_state=42),
-            'SVC': SVC(C=1.0, kernel='rbf', gamma='scale', probability=True, decision_function_shape='ovr', tol=1e-3, class_weight='balanced', random_state=42),
-            'Random Forest': RandomForestClassifier(n_estimators=300, criterion='gini', max_depth=15, min_samples_split=5, min_samples_leaf=2, max_features='sqrt', bootstrap=True, oob_score=True, class_weight='balanced_subsample', n_jobs=-1, random_state=42)
+            'Logistic Regression': LogisticRegression(
+                penalty='l2', C=0.1, solver='lbfgs', 
+                max_iter=2000, tol=1e-4, class_weight='balanced', 
+                n_jobs=-1, random_state=42),
+                
+            'SVC': SVC(
+                C=50, kernel='rbf', gamma=0.01, probability=True, decision_function_shape='ovr', 
+                tol=1e-3, class_weight='balanced', random_state=42),
+
+            'Random Forest': RandomForestClassifier(
+                n_estimators=200, criterion='entropy', 
+                max_depth=40, min_samples_split=2, 
+                min_samples_leaf=2, max_features='log2', 
+                bootstrap=False, oob_score=True, 
+                class_weight='balanced_subsample', 
+                n_jobs=-1, random_state=42)
         }
 
-        mlflow.sklearn.autolog()
-        mlflow.set_tracking_uri("http://127.0.0.1:5000/") 
+        mlflow.set_tracking_uri("http://127.0.0.1:5001/") 
         mlflow.set_experiment("Diet_Health_Status_Basic")
+        mlflow.sklearn.autolog()
 
     def prepare_data(self, kolom_bocor=['BMI', 'Height_cm', 'Weight_kg', 'Health_Status']):
         """
@@ -50,6 +67,9 @@ class DietModelPipeline:
         kolom_drop = [col for col in kolom_bocor if col in df_model.columns]
         
         X = df_model.drop(columns=kolom_drop)
+        if 'Health_Status' in X.columns:
+            X = X.drop(columns=['Health_Status'])
+            
         y = df_model['Health_Status']
         
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
@@ -83,6 +103,8 @@ class DietModelPipeline:
                 print("-" * 55)
                 
                 report_dict = classification_report(self.y_test, y_pred, target_names=self.target_names, output_dict=True)
+                report_dict.pop('accuracy', None)
+                
                 df_report = pd.DataFrame(report_dict).transpose()
                 
                 df_report['Model'] = name
@@ -106,8 +128,13 @@ class DietModelPipeline:
         Input: save_path (string)
         Output: None (membuat file PNG lokal)
         """
-        fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-        axes = axes.flatten()
+        n_models = len(self.predictions)
+        fig, axes = plt.subplots(1, n_models, figsize=(6 * n_models, 5))
+        
+        if n_models == 1:
+            axes = [axes]
+        else:
+            axes = axes.flatten()
         
         for i, (name, y_pred) in enumerate(self.predictions.items()):
             cm = confusion_matrix(self.y_test, y_pred)
