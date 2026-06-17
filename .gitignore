@@ -17,6 +17,7 @@ mlflow.db
 # 4. Log Files
 *.log
 api_model_logs.log
+tuning_errors.log
 
 # 5. Python & Jupyter Caches
 __pycache__/
