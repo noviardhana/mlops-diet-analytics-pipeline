@@ -81,15 +81,15 @@ Tahap pengembangan model klasifikasi untuk memprediksi status kesehatan berdasar
 
 -  **Baseline Modelling:** Melatih beberapa algoritma machine learning seperti:
 
-- Support Vector Classifier (SVC)
+    - Support Vector Classifier (SVC)
 
-- K-Nearest Neighbors (KNN)
+    - K-Nearest Neighbors (KNN)
 
-- Random Forest
+    - Random Forest
 
-- Gradient Boosting
+    - Gradient Boosting
 
-- XGBoost
+    - XGBoost
 
   
 
@@ -99,17 +99,17 @@ Tahap pengembangan model klasifikasi untuk memprediksi status kesehatan berdasar
 
 -  **Evaluasi Model:** Mengukur performa model menggunakan:
 
-- Accuracy
+    - Accuracy
 
-- Precision
+    - Precision
 
-- Recall
+    - Recall
 
-- F1-Score
+    - F1-Score
 
-- Classification Report
+    - Classification Report
 
-- Confusion Matrix
+    - Confusion Matrix
 
   
 
@@ -119,15 +119,15 @@ Tahap pengembangan model klasifikasi untuk memprediksi status kesehatan berdasar
 
 -  **Output Artefak Model:**
 
-- Folder `model_base/`
+    - Folder `model_base/`
 
-- Model terlatih (`saved_model/`)
+    - Model terlatih (`saved_model/`)
 
-- Classification Report (`.csv`)
+    - Classification Report (`.csv`)
 
-- Confusion Matrix (`.png`)
+    - Confusion Matrix (`.png`)
 
-- Ranking performa model (`.csv`)
+    - Ranking performa model (`.csv`)
 
   
 
@@ -153,13 +153,13 @@ Tahap otomatisasi proses training dan deployment menggunakan GitHub Actions dan 
 
 -  **Automated Model Training:** Workflow akan secara otomatis:
 
-- Menginstal dependency yang dibutuhkan
+    - Menginstal dependency yang dibutuhkan
 
-- Menjalankan training model
+    - Menjalankan training model
 
-- Menghasilkan artefak evaluasi
+    - Menghasilkan artefak evaluasi
 
-- Menyimpan model terbaik
+    - Menyimpan model terbaik
 
   
 
@@ -228,7 +228,7 @@ http://127.0.0.1:5000/invocations
 Mengaktifkan pengumpul metrik sistem dan API.
 
 ```
-python .\3.prometheus_exporter.py
+python 3.prometheus_exporter.py
 ```
 
 Endpoint:  
