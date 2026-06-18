@@ -17,31 +17,71 @@ SUBMISSION_SML/
 
 ## 🛠️ 4 Tahapan Utama Pipeline
 
-### 1. [Preprocessing](https://github.com/noviardhana/Eksperimen_SML_Tegas-Gagas-Impian) (Pra-pemrosesan Data)
+## 1. [Preprocessing](https://github.com/noviardhana/Eksperimen_SML_Tegas-Gagas-Impian) (Pra-pemrosesan Data)
 
-Tahap awal untuk memastikan kualitas data sebelum masuk ke dalam proses _training_.
+Tahap awal untuk memastikan kualitas data sebelum digunakan pada proses pemodelan machine learning.
 
--   **Eksplorasi & Pembersihan:** Menangani _missing values_, duplikasi, serta melakukan rekayasa fitur (_feature engineering_) pada dataset diet sehat (`healthy_diet_calorie_intake.csv`).
-    
--   **Output:** Dataset bersih yang siap digunakan untuk pemodelan (`healthy_diet_calorie_intake_preprocessing.csv`).
-    
+- **Eksplorasi dan Pembersihan Data:** Melakukan analisis data awal (EDA), menangani missing values, menghapus data duplikat, melakukan deteksi serta penanganan outlier, dan membersihkan data yang tidak relevan.
 
-### 2. Membangun Model (Model Development & Tracking)
+- **Feature Engineering & Transformasi:** Melakukan encoding fitur kategorikal, normalisasi/standardisasi fitur numerik, serta menghapus fitur yang berpotensi menyebabkan data leakage.
 
-Tahap eksperimen untuk mencari performa model terbaik menggunakan arsitektur **MLflow**.
+- **Output:** Dataset hasil preprocessing yang siap digunakan pada tahap training model, disimpan dalam file `healthy_diet_calorie_intake_preprocessing.csv`.
 
--   **Eksperimen & Tuning:** Kode `modelling.py` dan `modelling_tunning.py` digunakan untuk melatih model awal dan melakukan _hyperparameter tuning_ pada algoritma Random Forest dan SVC.
-    
--   **Manajemen Artefak:** Seluruh performa metrik, parameter, dan file model fisik disimpan secara terstruktur di dalam folder `mlruns/` dan `mlartifacts/`.
-    
+---
 
-### 3. [Workflow-CI](https://github.com/noviardhana/Workflow-CI) (Continuous Integration)
+## 2. Membangun Model (Model Development & Experiment Tracking)
 
-Sistem otomatisasi untuk menjamin bahwa setiap perubahan kode aman dan memenuhi standar sebelum dideploy.
+Tahap pengembangan model klasifikasi untuk memprediksi status kesehatan berdasarkan pola konsumsi dan gaya hidup.
 
--   **Otomatisasi GitHub Actions:** Folder `.github/workflows` menyimpan konfigurasi CI untuk menjalankan pengujian otomatis (_automated testing_) dan validasi kode setiap kali ada aktivitas _push_ ke repositori.
-    
--   **MLProject:** Menggunakan spesifikasi `MLProject` untuk standarisasi lingkungan eksekusi agar _reproducible_.
+- **Baseline Modelling:** Melatih beberapa algoritma machine learning seperti:
+  - Support Vector Classifier (SVC)
+  - K-Nearest Neighbors (KNN)
+  - Random Forest
+  - Gradient Boosting
+  - XGBoost
+
+- **Hyperparameter Tuning:** Melakukan optimasi parameter menggunakan `GridSearchCV` dan `RandomizedSearchCV` untuk memperoleh konfigurasi model terbaik berdasarkan metrik evaluasi.
+
+- **Evaluasi Model:** Mengukur performa model menggunakan:
+  - Accuracy
+  - Precision
+  - Recall
+  - F1-Score
+  - Classification Report
+  - Confusion Matrix
+
+- **Manajemen Eksperimen dengan MLflow:** Seluruh parameter, metrik evaluasi, model hasil training, dan artefak eksperimen dicatat secara otomatis menggunakan MLflow sehingga setiap eksperimen dapat direproduksi dan dibandingkan dengan mudah.
+
+- **Output Artefak Model:**
+  - Folder `model_base/`
+  - Model terlatih (`saved_model/`)
+  - Classification Report (`.csv`)
+  - Confusion Matrix (`.png`)
+  - Ranking performa model (`.csv`)
+
+---
+
+## 3. [Workflow-CI](https://github.com/noviardhana/Workflow-CI) (Continuous Integration & Automated Training)
+
+Tahap otomatisasi proses training dan deployment menggunakan GitHub Actions dan MLflow Project.
+
+- **GitHub Actions Automation:** Setiap perubahan kode yang di-*push* ke branch utama akan secara otomatis menjalankan pipeline CI/CD.
+
+- **MLflow Project Execution:** Menggunakan spesifikasi `MLproject` sebagai standar eksekusi sehingga proses training dapat dijalankan secara konsisten di berbagai lingkungan.
+
+- **Automated Model Training:** Workflow akan secara otomatis:
+  - Menginstal dependency yang dibutuhkan
+  - Menjalankan training model
+  - Menghasilkan artefak evaluasi
+  - Menyimpan model terbaik
+
+- **Artifact Management:** Hasil training seperti model, laporan evaluasi, dan confusion matrix dikumpulkan dan disimpan sebagai GitHub Artifact.
+
+- **Docker Containerization:** Model yang telah selesai dilatih akan dikemas menjadi Docker Image menggunakan MLflow sehingga siap untuk deployment.
+
+- **Docker Hub Integration:** Docker Image yang berhasil dibuat akan di-*push* secara otomatis ke Docker Hub untuk mempermudah proses distribusi dan deployment.
+
+---
     
 
 ### 4. Monitoring dan Logging (Pemantauan Produksi)
