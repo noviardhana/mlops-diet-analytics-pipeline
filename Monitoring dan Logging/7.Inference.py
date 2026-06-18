@@ -4,27 +4,23 @@ import json
 import random
 import logging
 
-
 logging.basicConfig(
-    filename="api_model_logs.log", 
-    level=logging.INFO,
+    filename="api_model_logs.log",
+    level=logging.WARNING,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-# Konfigurasi Global 
-URL = "http://127.0.0.1:5005/invocations"
+URL = "http://127.0.0.1:5000/invocations"
 HEADERS = {"Content-Type": "application/json"}
 
-# Kolom didefinisikan sekali di luar loop
 COLUMNS = [
-    "Age", "Activity_Level", "Daily_Calorie_Requirement", 
-    "Daily_Calorie_Consumed", "Protein_Intake_g", "Carbohydrate_Intake_g", 
-    "Fat_Intake_g", "Water_Intake_Liters", "Gender_Male", 
-    "Gender_Other", "Diet_Type_High Protein", "Diet_Type_Keto", 
+    "Age", "Activity_Level", "Daily_Calorie_Requirement",
+    "Daily_Calorie_Consumed", "Protein_Intake_g", "Carbohydrate_Intake_g",
+    "Fat_Intake_g", "Water_Intake_Liters", "Gender_Male",
+    "Gender_Other", "Diet_Type_High Protein", "Diet_Type_Keto",
     "Diet_Type_Mediterranean", "Diet_Type_Vegan", "Diet_Type_Vegetarian"
 ]
 
-# Kumpulan sampel data
 BASE_DATA = [
     [0.063, 3, 1.218, 0.231, 1.036, -2.197, 2.253, 0.847, 1, 0, 0, 1, 0, 0, 0],
     [-1.700, 0, -0.819, -0.749, -0.547, 0.132, -1.179, -1.235, 0, 0, 0, 0, 0, 1, 0],
@@ -34,67 +30,40 @@ BASE_DATA = [
 ]
 
 def generate_payload():
-    """
-    Penjelasan: Memilih satu baris data secara acak dan membungkusnya dalam format JSON.
-    """
-    data_terpilih = random.choice(BASE_DATA)
-    payload = {
+    return {
         "dataframe_split": {
             "columns": COLUMNS,
-            "data": [data_terpilih]
+            "data": [random.choice(BASE_DATA)]
         }
     }
-    return payload
 
-def run_simulation(interval_detik=1):
-    """
-    Penjelasan: Menjalankan loop tanpa batas untuk menembak API model secara berulang.
-    """
-    print(f"Mulai menembak API di {URL} ... (Tekan Ctrl+C untuk stop)\n")
-    
-    while True:
+def run_simulation(interval=1, max_requests=500):
+    print(f"Starting inference on {URL}\n")
+
+    for i in range(max_requests):
+
         payload = generate_payload()
-        
-        # Mulai mencatat waktu eksekusi (seperti di kode pertama)
         start_time = time.time()
-        
+
         try:
-            # Mengirim request POST ke server model Docker
-            response = requests.post(URL, headers=HEADERS, data=json.dumps(payload))
-            
-            # Hitung response time
+            response = requests.post(URL, json=payload)
             response_time = time.time() - start_time
-            
-            if response.status_code == 200:
-                # Coba parse ke JSON, jika gagal biarkan sebagai text biasa
-                try:
-                    prediction = response.json()
-                except json.JSONDecodeError:
-                    prediction = response.text.strip()
-                
-                # Logging hasil request ke file log
-                logging.info(f"Request: {payload}, Response: {prediction}, Response Time: {response_time:.4f} sec")
-                
-                # Print hasil ke terminal sesuai format yang lu mau
-                print(f"Prediction: {prediction}")
-                print(f"Response Time: {response_time:.4f} sec\n")
-                
-            else:
-                error_msg = f"Error {response.status_code}: {response.text}"
-                logging.error(error_msg)
-                print(error_msg + "\n")
-                
-        except requests.exceptions.ConnectionError:
-            error_msg = "Gagal koneksi! Pastikan container Docker masih 'Up'."
-            logging.error(f"Exception: {error_msg}")
-            print(f"Exception: {error_msg}\n")
-            
+
+            response.raise_for_status()
+            prediction = response.json()
+
+            logging.info(
+                f"Request {i+1} | Payload: {payload} | "
+                f"Response: {prediction} | Time: {response_time:.4f}s"
+            )
+
+            print(f"[{i+1}] Prediction: {prediction} | {response_time:.4f}s")
+
         except Exception as e:
-            logging.error(f"Exception: {str(e)}")
-            print(f"Exception: {str(e)}\n")
-            
-        # Jeda waktu antar request
-        time.sleep(interval_detik)
+            logging.error(f"Error: {str(e)}")
+            print(f"Error: {str(e)}")
+
+        time.sleep(interval)
 
 if __name__ == "__main__":
     run_simulation()

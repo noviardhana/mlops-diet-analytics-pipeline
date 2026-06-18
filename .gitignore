@@ -1,35 +1,46 @@
+# =========================
 # 1. Virtual Environment
+# =========================
 avicen/
 venv/
 env/
 .venv/
 
+# =========================
 # 2. Secrets & Credentials
+# =========================
 .env
 .env.*
 
-# 3. MLflow Local Backend & Artifacts
-# (Ukuran file ini bisa ratusan MB dan tidak perlu di-push ke GitHub)
+# =========================
+# 3. MLflow (LOCAL ARTIFACTS)
+# =========================
 mlruns/
 mlartifacts/
 mlflow.db
 
-# 4. Log Files
+# =========================
+# 4. Logs
+# =========================
 *.log
-api_model_logs.log
-tuning_errors.log
 
-# 5. Python & Jupyter Caches
+# =========================
+# 5. Python Cache
+# =========================
 __pycache__/
 *.py[cod]
 *$py.class
 .ipynb_checkpoints/
 .pytest_cache/
 
-# 6. OS Generated Files
+# =========================
+# 6. OS Files
+# =========================
 .DS_Store
 Thumbs.db
 
-# Files related to the experiment notebook (optional, but can be ignored if you want to keep the notebook clean)
-healthy_diet_calorie_intake_preprocessing.csv
-healthy_diet_calorie_intake.csv
+# =========================
+# 7. DATASET (OPTIONAL)
+# =========================
+# healthy_diet_calorie_intake_preprocessing.csv
+# healthy_diet_calorie_intake.csv

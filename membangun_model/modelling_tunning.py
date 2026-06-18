@@ -1164,15 +1164,13 @@ class DietModelPipeline:
                 f"{result.plot_path}"
             )
 
+
     def _log_all_models_to(
         self,
         tracking_uri: str,
         experiment_name: str,
         run_prefix: str,
-        evaluation_results: dict[
-            str,
-            EvaluationResult,
-        ],
+        evaluation_results: dict[str, "EvaluationResult"],
     ) -> None:
         """
         Description:
@@ -1201,74 +1199,69 @@ class DietModelPipeline:
             Logged MLflow runs.
         """
 
-        mlflow.set_tracking_uri(
-            tracking_uri
-        )
+        mlflow.set_tracking_uri(tracking_uri)
+        mlflow.set_experiment(experiment_name)
 
-        mlflow.set_experiment(
-            experiment_name
-        )
+        for model_name, model in self.tuned_models.items():
 
-        for (
-            model_name,
-            model,
-        ) in self.tuned_models.items():
+            result = evaluation_results.get(model_name)
 
-            result = evaluation_results[
-                model_name
-            ]
+            if result is None:
+                logger.warning(
+                    "No evaluation result found for %s. Skipping logging.",
+                    model_name,
+                )
+                continue
+
+            run_name = f"{run_prefix}_{model_name.replace(' ', '_')}"
 
             try:
+                with mlflow.start_run(run_name=run_name):
 
-                with mlflow.start_run(
-                    run_name=(
-                        f"{run_prefix}_"
-                        f"{model_name}"
-                    )
-                ):
+                    # 🔥 log hyperparameters (safe fallback)
+                    params = self.best_params.get(model_name, {})
+                    if params:
+                        mlflow.log_params(params)
 
-                    mlflow.log_params(
-                        self.best_params[model_name]
-                    )
+                    # 🔥 log metrics
+                    if result.metrics:
+                        mlflow.log_metrics(result.metrics)
 
-                    mlflow.log_metrics(
-                        result.metrics
-                    )
+                    # 🔥 artifacts
+                    if result.report_path:
+                        mlflow.log_artifact(str(result.report_path))
 
-                    mlflow.log_artifact(
-                        str(
-                            result.report_path
-                        )
-                    )
+                    if result.plot_path:
+                        mlflow.log_artifact(str(result.plot_path))
 
-                    mlflow.log_artifact(
-                        str(
-                            result.plot_path
-                        )
-                    )
-
+                    # 🔥 log model
                     mlflow.sklearn.log_model(
                         sk_model=model,
                         artifact_path="model",
-                        serialization_format=(
-                            mlflow.sklearn
-                            .SERIALIZATION_FORMAT_CLOUDPICKLE
-                        ),
+                        serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+                    )
+
+                    # 🔥 tagging biar gampang filter di UI
+                    mlflow.set_tags(
+                        {
+                            "model_name": model_name,
+                            "run_prefix": run_prefix,
+                        }
                     )
 
                 logger.info(
-                    "%s successfully logged to %s.",
+                    "%s successfully logged to MLflow (%s).",
                     model_name,
-                    run_prefix,
+                    experiment_name,
                 )
 
-            except Exception:
-
+            except Exception as e:
                 logger.exception(
-                    "Failed to log %s to %s.",
+                    "Failed to log %s to MLflow: %s",
                     model_name,
-                    run_prefix,
+                    str(e),
                 )
+                
 
     def evaluate_and_log_mlflow(
         self,

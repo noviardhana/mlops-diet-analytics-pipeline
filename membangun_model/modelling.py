@@ -872,46 +872,42 @@ class DietModelPipeline:
                 time.time()
             )
 
+            
             with mlflow.start_run(
-                run_name=(
-                    f"Base_"
-                    f"{model_name.replace(' ', '_')}"
-                )
+                run_name=f"Base_{model_name.replace(' ', '_')}"
             ):
 
-                model.fit(
-                    self.X_train,
-                    self.y_train,
-                )
+                # Train model
+                model.fit(self.X_train, self.y_train)
 
-                evaluation_result = (
-                    self._evaluate_model(
-                        model_name,
+                # Evaluate
+                evaluation_result = self._evaluate_model(model_name, model)
+
+                self.evaluation_results[model_name] = evaluation_result
+
+                # Log metrics (aman kalau dict kosong)
+                if evaluation_result.metrics:
+                    mlflow.log_metrics(evaluation_result.metrics)
+
+                # Log artifacts (report + plot)
+                mlflow.log_artifact(str(evaluation_result.report_path))
+                mlflow.log_artifact(str(evaluation_result.plot_path))
+
+                # 🔥 LOG MODEL (ini yang penting)
+                if model_name in ["XGBoost", "KNN"]:
+                    mlflow.sklearn.log_model(
                         model,
+                        "model",
+                        serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE,
                     )
-                )
-
-                self.evaluation_results[
-                    model_name
-                ] = (
-                    evaluation_result
-                )
-
-                mlflow.log_metrics(
-                    evaluation_result.metrics
-                )
-
-                mlflow.log_artifact(
-                    str(
-                        evaluation_result.report_path
+                else:
+                    mlflow.sklearn.log_model(
+                        model,
+                        "model",
                     )
-                )
 
-                mlflow.log_artifact(
-                    str(
-                        evaluation_result.plot_path
-                    )
-                )
+                # optional: tag biar gampang tracking di UI
+                mlflow.set_tag("model_name", model_name)
 
             elapsed_time = (
                 time.time()
